@@ -51,7 +51,7 @@ def parse_personal(row):
 def parse_height(text):
     inches = int(text[-2:])
     feet = int(text[:-2])
-    return feet + 12 * inches
+    return (12 * feet) + inches
 
 
 def parse_attributes(row):
