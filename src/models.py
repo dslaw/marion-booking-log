@@ -30,8 +30,8 @@ class Inmate(Base):
     name = Column(String, nullable=False)
     race = Column(String, nullable=False)
     sex = Column(String, nullable=False)
-    height = Column(Integer, nullable=False)  # Inches.
-    weight = Column(Integer, nullable=False)  # Pounds.
+    height = Column(Integer, nullable=True)  # Inches.
+    weight = Column(Integer, nullable=True)  # Pounds.
     hair = Column(String, nullable=False)
     eyes = Column(String, nullable=False)
     booking_date = Column(Date, nullable=False)

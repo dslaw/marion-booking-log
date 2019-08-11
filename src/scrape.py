@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
+import logging
 import re
 import requests
 
@@ -15,8 +16,15 @@ def get(url):
 
 def parse_date(text):
     if not text:
+        # The field is able to be missing and lack of presence
+        # does not need to be logged.
         return None
-    dt = datetime.strptime(text, "%m/%d/%Y")
+
+    try:
+        dt = datetime.strptime(text, "%m/%d/%Y")
+    except ValueError as e:
+        logging.error(e)
+        return None
     return dt.date()
 
 
@@ -49,9 +57,23 @@ def parse_personal(row):
 
 
 def parse_height(text):
-    inches = int(text[-2:])
-    feet = int(text[:-2])
-    return (12 * feet) + inches
+    try:
+        inches = int(text[-2:])
+        feet = int(text[:-2])
+        height = (12 * feet) + inches
+    except ValueError as e:
+        logging.error(e)
+        height = None
+    return height
+
+
+def parse_weight(text):
+    try:
+        weight = int(text)
+    except ValueError as e:
+        logging.error(e)
+        weight = None
+    return weight
 
 
 def parse_attributes(row):
@@ -62,7 +84,7 @@ def parse_attributes(row):
         "race": race,
         "sex": sex,
         "height": parse_height(height_text),
-        "weight": int(weight_text),
+        "weight": parse_weight(weight_text),
         "hair": hair,
         "eyes": eyes,
     }
