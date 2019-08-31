@@ -5,8 +5,14 @@ Scrape the Marion County, Oregon booking log.
 
 ## Usage
 
-First create a Postgres (11+) database. `docker` can be used to create a
-database for development:
+First, ensure the following environment variables are set and exported:
+
+* `POSTGRES_PORT`
+* `POSTGRES_DATABASE`
+* `POSTGRES_USER`
+* `POSTGRES_PASSWORD`
+
+Create a Postgres (11+) database. `docker` can be used to create one:
 
 ```bash
 docker run \
@@ -15,38 +21,43 @@ docker run \
     -e POSTGRES_USER=${POSTGRES_USER} \
     -e POSTGRES_DB=${POSTGRES_DATABASE} \
     -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-    --name=marion-jail-dev \
+    --name=marion-jail-db \
     postgres:11
 ```
 
-Then create a virtual environment using `conda` that the scraper will run in:
+Then build the container for the web scraper:
 
 ```bash
-conda create \
-    --name=marion-jail \
-    --channel=conda-forge \
-    --yes \
-    python=3.7 \
-    --file=requirements.txt
+docker build . --tag=marion-jail-scraper
 ```
 
-Before running anything, first ensure the following environment variables are
-set and exported:
-
-* `POSTGRES_HOST`
-* `POSTGRES_PORT`
-* `POSTGRES_DATABASE`
-* `POSTGRES_USER`
-* `POSTGRES_PASSWORD`
-
-From within the activated environment, create the database tables:
+Use the web scraper container to setup the database:
 
 ```bash
-python -m src.models
+docker run \
+    --rm \
+    --net=host \
+    -e POSTGRES_HOST=localhost \
+    -e POSTGRES_PORT=${POSTGRES_PORT} \
+    -e POSTGRES_DATABASE=${POSTGRES_DATABASE} \
+    -e POSTGRES_USER=${POSTGRES_USER} \
+    -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+    --name=marion-jail-scraper \
+    marion-jail-scraper:latest \
+    --setup-db
 ```
 
-and run the scraper:
+And run the scraper, sending logging statements to stdout:
 
 ```bash
-python -m src.scrape >> scrape.log
+docker run \
+    --rm \
+    --net=host \
+    -e POSTGRES_HOST=localhost \
+    -e POSTGRES_PORT=${POSTGRES_PORT} \
+    -e POSTGRES_DATABASE=${POSTGRES_DATABASE} \
+    -e POSTGRES_USER=${POSTGRES_USER} \
+    -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+    --name=marion-jail-scraper \
+    marion-jail-scraper:latest
 ```

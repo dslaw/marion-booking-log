@@ -1,10 +1,11 @@
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
+import argparse
 import logging
 import sys
 
 from src.common import make_database_uri
-from src.models import Batch, Charge, Inmate
+from src.models import Batch, Charge, Inmate, create_tables
 from src.scrape import scrape
 
 
@@ -16,6 +17,16 @@ logging.basicConfig(
 )
 
 
+def make_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-s", "--setup-db",
+        action="store_true",
+        help="Create database tables and exit."
+    )
+    return parser
+
+
 def create_session():
     uri = make_database_uri()
     engine = create_engine(uri)
@@ -24,6 +35,13 @@ def create_session():
 
 
 def main():
+    parser = make_parser()
+    args = parser.parse_args()
+
+    if args.setup_db:
+        create_tables()
+        return 0
+
     logging.info("Starting database session")
     session = create_session()
 

@@ -67,11 +67,11 @@ Inmate.charges = relationship(
 )
 
 
-if __name__ == "__main__":
-    # Create tables.
+def create_tables():
     from sqlalchemy import create_engine
     from .common import make_database_uri
 
     uri = make_database_uri()
     engine = create_engine(uri)
     Base.metadata.create_all(engine)
+    return
